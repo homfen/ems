@@ -47,9 +47,7 @@
 """
 
 import time
-import sys
 import random
-sys.path.append("../../Python/")
 import ems
 
 # Initialize EMS: 1 process, no thread-core affinity, user provided parallelism
@@ -57,7 +55,7 @@ import ems
 # "user" mode parallelism, and a unique namespace for EMS runtime
 # ("pyExample") to keep the JS program distinct from Javascript EMS
 # program also running.
-ems.initialize(1, False, "user", "pyExample")
+ems.initialize(1, False, "user", "pyExample", "../../src/ems_proto.h")
 
 
 # The EMS array attributes must be the same by all programs sharing the array,
@@ -76,17 +74,17 @@ shared = ems.new({
 
 # ------------------------------------------------------------------------------------------
 #  Begin Main Program
-print """Start this program after the JS program.
+print("""Start this program after the JS program.
 If this Python appears hung and does not respond to ^C, also try ^\ and ^Z
 ----------------------------------------------------------------------------
-"""
+""")
 
 #  Initial synchronization with JS
 #  Write a value to empty memory and mark it full
 shared.writeEF("Py hello", "from Python")
 
 # Wait for JS to start
-print "Hello ", shared.readFE("JS hello")
+print("Hello ", shared.readFE("JS hello"))
 
 
 def barrier(message):
@@ -95,14 +93,14 @@ def barrier(message):
     global shared
     naptime = random.random() + 0.5
     time.sleep(naptime)  # Delay 0.5-1.5sec to make synchronization apparent
-    print "Entering Barrier:", message
+    print("Entering Barrier:", message)
     shared.writeEF("js side barrier", None)
     shared.readFE("py side barrier")
-    print "Completed Barrier after delaying for", naptime, "seconds"
-    print "------------------------------------------------------------------"
+    print("Completed Barrier after delaying for", naptime, "seconds")
+    print("------------------------------------------------------------------")
 
 
-print "Trying out the new barrier by first napping for 1 second..."
+print("Trying out the new barrier by first napping for 1 second...")
 time.sleep(1)
 # ---------------------------------------------------------------------
 barrier("Trying out the barrier utility function")
@@ -114,17 +112,17 @@ barrier("Trying out the barrier utility function")
 # for Python to finish at the next barrier
 barrier("Finished waiting for JS to finish initializing nestedObj")
 
-print "Value of shared.nestedObj left by JS:", shared.nestedObj
+print("Value of shared.nestedObj left by JS:", shared.nestedObj)
 try:
     shared.nestedObj.number = 987  # Like JS, setting attributes of sub-objects will not work
-    print "ERROR -- This should not work"
+    print("ERROR -- This should not work")
     exit()
 except:
-    print "Setting attributes of sub-objects via native syntax will not work"
+    print("Setting attributes of sub-objects via native syntax will not work")
 
-print "These two expressions are the same:", \
+print("These two expressions are the same:", \
     shared["nestedObj"].read()["subobj"]["middle"], "or", \
-    shared.read("nestedObj")["subobj"]["middle"]
+    shared.read("nestedObj")["subobj"]["middle"])
 
 
 # --------------------------------------------------------------------
@@ -133,10 +131,10 @@ barrier("JS and Py are synchronized at the end of working with nestedObj")
 
 
 # Enter the shared counter loop
-for count in xrange(100000):
+for count in range(100000):
     value = shared.faa("counter", 1)
     if count % 10000 == 0:
-        print "Py iteration", count, "  Shared counter=", value
+        print("Py iteration", count, "  Shared counter=", value)
 barrier("Waiting for Js to finish it's counter loop")
 
 
@@ -148,13 +146,13 @@ shared.arrayPlusString = [1, 2, 3]  # Initialize arrayPlusString before starting
 barrier("Wait until it's time to glimpse into the future of Python")
 try:
     dummy = shared.arrayPlusString + "hello"
-    print "ERROR -- Should result in:   TypeError: can only concatenate list (not \"str\") to list"
+    print("ERROR -- Should result in:   TypeError: can only concatenate list (not \"str\") to list")
     exit()
 except:
-    print "Adding an array and string is an error in Python"
+    print("Adding an array and string is an error in Python")
 
 shared.arrayPlusString += "hello"
-print "However 'array += string' produces an array", shared.arrayPlusString
+print("However 'array += string' produces an array", shared.arrayPlusString)
 
 # Let JS know 'shared.arrayPlusString' was initialized
 barrier("shared.arrayPlusString is now initialized")
@@ -166,15 +164,15 @@ barrier("Welcome to The Future™!")
 
 # --------------------------------------------------------------------
 # JS is now in it's event loop with the counter running
-for sampleN in xrange(10):
+for sampleN in range(10):
     time.sleep(random.random())
-    print "Shared counter is now", shared.counter
+    print("Shared counter is now", shared.counter)
 
 # Restart the counter 
 shared.counter = 0
-for sampleN in xrange(5):
+for sampleN in range(5):
     time.sleep(random.random() + 0.5)
-    print "Shared reset counter is now", shared.counter
+    print("Shared reset counter is now", shared.counter)
 
 
 # Wait 1 second and stop the JS timer counter
@@ -182,8 +180,8 @@ time.sleep(1)
 shared.counter = "stop"
 
 # Show the counter has stopped.  Last value = "stop" + 1
-for sampleN in xrange(5):
+for sampleN in range(5):
     time.sleep(random.random() + 0.5)
-    print "Shared reset counter should have stopped changing:", shared.counter
+    print("Shared reset counter should have stopped changing:", shared.counter)
 
-print "Exiting normally."
+print("Exiting normally.")

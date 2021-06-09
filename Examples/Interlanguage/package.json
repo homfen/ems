@@ -1,0 +1,14 @@
+{
+  "name": "interlanguage",
+  "version": "1.0.0",
+  "description": "In *The Future™*,  memory will have new capabilities that programmers will make decisions about how best to use: - __Non-Volatility__ - No more \"loading\" files into variables in memory,   just use the same variables as last time. - __Sharing__ - Directly sharing objects between programs instead of   communicating them through network messages. - __Selectable Latency__ - Expensive fast memory for frequently accessed variables,   cheaper slower memory for less frequently used data. - __Correctness__ - Very inexpensive bulk memory might give approximate values instead   of the exact value stored. - __Location__ - Allocate memory in another another rack or data center - __Mirroring__ - Automatic fail-over to backup memory",
+  "main": "interlanguage.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ems": "^1.6.1"
+  }
+}

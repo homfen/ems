@@ -49,38 +49,7 @@ sudo apt-get install python3-cffi
 
 
 ffi = FFI()
-cpp_out = subprocess.check_output(["cpp", "../src/ems_proto.h"]).decode("utf-8")
-prototypes = cpp_out.split("\n")
-headerLines = []
-for line in prototypes:
-    # Strip CPP directives and annotations
-    line = re.sub("^#.*$", "", line)
-    # Strip extern attribute
-    line = re.sub("extern \"C\" ", "", line)
-    if line is not "":
-        headerLines.append(line)
-
-# Delcare the CFFI Headers
-ffi.cdef('\n'.join(headerLines))
-
-# Find the .so and load it
 libems = None
-package_paths = site.getsitepackages()
-for package_path in package_paths:
-    try:
-        packages = os.listdir(package_path)
-        for package in packages:
-            if package == "libems" and libems is None:
-                libems_path = package_path + "/libems/"
-                files = os.listdir(libems_path)
-                for file in files:
-                    if file[-3:] == ".so":  # TODO: Guessing it's the only .so
-                        fname = libems_path + file
-                        libems = ffi.dlopen(fname)
-                        break
-    except:
-        # print("This path does not exist:", package_path, "|", type (package_path))
-        pass
 
 # Do not GC the EMS values until deleted
 import weakref
@@ -130,10 +99,43 @@ def emsThreadStub(conn, taskn):
 
 
 def initialize(nThreadsArg, pinThreadsArg=False, threadingType='bsp',
-               contextname='/EMS_MainDomain'):
+               contextname='/EMS_MainDomain', src="../src/ems_proto.h"):
+    global myID, libems, EMSmmapID, _regionN, pinThreads, domainName, inParallelContext, tasks, nThreads
+
+    cpp_out = subprocess.check_output(["cpp", src]).decode("utf-8")
+    prototypes = cpp_out.split("\n")
+    headerLines = []
+    for line in prototypes:
+        # Strip CPP directives and annotations
+        line = re.sub("^#.*$", "", line)
+        # Strip extern attribute
+        line = re.sub("extern \"C\" ", "", line)
+        if line is not "":
+            headerLines.append(line)
+
+    # Delcare the CFFI Headers
+    ffi.cdef('\n'.join(headerLines))
+
+    # Find the .so and load it
+    package_paths = site.getsitepackages()
+    for package_path in package_paths:
+        try:
+            packages = os.listdir(package_path)
+            for package in packages:
+                if package == "libems" and libems is None:
+                    libems_path = package_path + "/libems/"
+                    files = os.listdir(libems_path)
+                    for file in files:
+                        if file[-3:] == ".so":  # TODO: Guessing it's the only .so
+                            fname = libems_path + file
+                            libems = ffi.dlopen(fname)
+                            break
+        except:
+            # print("This path does not exist:", package_path, "|", type (package_path))
+            pass
+
     """EMS object initialization, invoked by the require statement"""
     nThreadsArg = int(nThreadsArg)
-    global myID, libems, EMSmmapID, _regionN, pinThreads, domainName, inParallelContext, tasks, nThreads
     if not nThreadsArg > 0:
         print("EMS: Must declare number of nodes to use.  Input:" + str(nThreadsArg))
         return
