@@ -723,6 +723,7 @@ class EMSarray(object):
         return self._returnData(val)
 
     def readFE(self, indexes):
+        print("readFE", indexes)
         emsnativeidx = _new_EMSval(self._idx(indexes))
         val = _new_EMSval(None)
         libems.EMSreadFE(self.mmapID, emsnativeidx, val)

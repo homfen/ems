@@ -81,7 +81,7 @@ clean_js:
 	$(RM) -rf build
 
 clean_py3:
-	$(RM) -rf Python/build Python/py3ems/build /usr/local/lib/python*/dist-packages/*ems* ~/Library/Python/*/lib/python/site-packages/*ems* ~/Library/Python/*/lib/python/site-packages/__pycache__/*ems* /Library/Frameworks/Python.framework/Versions/*/lib/python*/site-packages/*ems*
+	$(RM) -rf Python/build Python/py3ems/build /usr/local/lib/python*/dist-packages/*ems* ~/Library/Python/*/lib/python/site-packages/*ems* ~/Library/Python/*/lib/python/site-packages/__pycache__/*ems* /Library/Frameworks/Python.framework/Versions/*/lib/python*/site-packages/*ems* /Users/*/opt/anaconda3/envs/py*/lib/python*/site-packages/*ems* /Users/*/opt/anaconda3/envs/py*/lib/python*/site-packages/libems
 
 clean_py2:
 	$(RM) -rf Python/build Python/py2ems/build /usr/local/lib/python*/dist-packages/*ems* ~/Library/Python/*/lib/python/site-packages/*ems* ~/Library/Python/*/lib/python/site-packages/__pycache__/*ems* /Library/Python/*/site-packages/*ems*

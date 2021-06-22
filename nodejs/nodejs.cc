@@ -41,8 +41,9 @@
  * @param stringIsJSON You know who
  * @return True if successful converting
  */
-#define NAPI_OBJ_2_EMS_OBJ(napiValue, emsValue, stringIsJSON) {         \
-        emsValue.type = NapiObjToEMStype(napiValue, stringIsJSON);      \
+#define NAPI_OBJ_2_EMS_OBJ(napiValue, emsValue, stringIsJSON, isBuffer, bufferLength) {         \
+        emsValue.type = NapiObjToEMStype(napiValue, stringIsJSON, isBuffer);      \
+        fprintf(stderr, "emsValue.type: %d\n", emsValue.type);          \
         switch (emsValue.type) {                                        \
         case EMS_TYPE_BOOLEAN: {                                        \
             bool tmp = napiValue.As<Napi::Boolean>();                   \
@@ -68,6 +69,19 @@
                 THROW_TYPE_ERROR(QUOTE(__FUNCTION__) " ERROR: Unable to allocate scratch memory for serialized value");\
             }                                                           \
             memcpy(emsValue.value, s.c_str(), emsValue.length);         \
+        }                                                               \
+            break;                                                      \
+        case EMS_TYPE_BUFFER: {                                         \
+            emsValue.length = bufferLength;                         \
+            fprintf(stderr, "EMS_TYPE_BUFFER length: %zu\n", emsValue.length);      \
+            fprintf(stderr, "NAPI_OBJ_2_EMS_OBJ alloca length: %zu\n", emsValue.length);      \
+            Napi::Uint8Array arr = napiValue.As<Napi::Uint8Array>();     \
+            uint8_t* data = new uint8_t[bufferLength];    \
+            for (int j = 0; j < bufferLength; j++) {     \
+              data[j] = uint8_t(arr[j]);     \
+            }     \
+            emsValue.value = data;    \
+            fprintf(stderr, "NAPI_OBJ_2_EMS_OBJ memcpy\n");      \
         }                                                               \
             break;                                                      \
         case EMS_TYPE_UNDEFINED:                                        \
@@ -187,8 +201,8 @@ Napi::Value NodeJScas(const Napi::CallbackInfo& info) {
     if (info.Length() != 3) {
         THROW_ERROR(SOURCE_LOCATION ": Called with wrong number of args.");
     }
-    NAPI_OBJ_2_EMS_OBJ(info[1],  oldVal, false);
-    NAPI_OBJ_2_EMS_OBJ(info[2],  newVal, false);
+    NAPI_OBJ_2_EMS_OBJ(info[1],  oldVal, false, false, 0);
+    NAPI_OBJ_2_EMS_OBJ(info[2],  newVal, false, false, 0);
     if (!EMScas(mmapID, &key, &oldVal, &newVal, &returnValue)) {
         THROW_ERROR("NodeJScas: Failed to get a valid old value");
     }
@@ -377,6 +391,20 @@ Napi::Value NodeJSwriteEF(const Napi::CallbackInfo& info) {
     return Napi::Value::From(env, returnValue);
 }
 
+Napi::Value NodeJSwriteEFBuffer(const Napi::CallbackInfo& info) {
+    fprintf(stderr, "NodeJSwriteEF\n");
+    Napi::Env env = info.Env();
+    int length = info[4].As<Napi::Number>();
+    fprintf(stderr, "check key\n");
+    STACK_ALLOC_AND_CHECK_KEY_ARG;
+    fprintf(stderr, "check value\n");
+    STACK_ALLOC_AND_CHECK_VALUE_ARG(1);
+    fprintf(stderr, "call EMSwriteEF\n");
+    bool returnValue = EMSwriteEFBuffer(mmapID, &key, &value, length);
+    fprintf(stderr, "returnValue %d\n", returnValue);
+    return Napi::Value::From(env, returnValue);
+}
+
 
 Napi::Value NodeJSwriteXF(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
@@ -471,7 +499,7 @@ Napi::Value NodeJSinitialize(const Napi::CallbackInfo& info) {
     int32_t pctMLock   = info[14].As<Napi::Number>();
 
     if (doDataFill) {
-        NAPI_OBJ_2_EMS_OBJ(info[8], fillData, fillIsJSON);
+        NAPI_OBJ_2_EMS_OBJ(info[8], fillData, fillIsJSON, false, 0);
         if (doDataFill  &&  (fillData.type == EMS_TYPE_JSON  ||  fillData.type == EMS_TYPE_STRING)) {
             // Copy the default values to the heap because napiObj2EMSval copies them to the stack
             void *valueOnStack = fillData.value;
@@ -516,6 +544,7 @@ Napi::Value NodeJSinitialize(const Napi::CallbackInfo& info) {
     ADD_FUNC_TO_NAPI_OBJ(obj, "readFF", NodeJSreadFF);
     ADD_FUNC_TO_NAPI_OBJ(obj, "setTag", NodeJSsetTag);
     ADD_FUNC_TO_NAPI_OBJ(obj, "writeEF", NodeJSwriteEF);
+    ADD_FUNC_TO_NAPI_OBJ(obj, "writeEFBuffer", NodeJSwriteEFBuffer);
     ADD_FUNC_TO_NAPI_OBJ(obj, "writeXF", NodeJSwriteXF);
     ADD_FUNC_TO_NAPI_OBJ(obj, "writeXE", NodeJSwriteXE);
     ADD_FUNC_TO_NAPI_OBJ(obj, "push", NodeJSpush);

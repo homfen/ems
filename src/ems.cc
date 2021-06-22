@@ -581,7 +581,9 @@ bool EMSwriteUsingTags(int mmapID,
                        EMSvalueType *key,
                        EMSvalueType *value,
                        unsigned char initialFE,             // Block until F/E tags are this value
-                       unsigned char finalFE)               // Set the tag to this value when done
+                       unsigned char finalFE,// Set the tag to this value when done
+                       int bufferLength
+                       )               
 {
     RESET_NAP_TIME;
     char *emsBuf = emsBufs[mmapID];
@@ -622,6 +624,7 @@ bool EMSwriteUsingTags(int mmapID,
                 }
 
                 // Store argument value into EMS memory
+                fprintf(stderr, "EMSwriteUsingTags switch type %d\n", value->type);
                 switch (value->type) {
                     case EMS_TYPE_BOOLEAN:
                         bufInt64[EMSdataData(idx)] = (int64_t) value->value;
@@ -644,6 +647,19 @@ bool EMSwriteUsingTags(int mmapID,
                         strcpy(EMSheapPtr(textOffset), (const char *) value->value);
                     }
                         break;
+                    case EMS_TYPE_BUFFER: {
+                        uint8_t *data = (uint8_t *)value->value;
+                        for (int i = 0; i < 100; i++) {
+                          fprintf(stderr, "EMSwriteUsingTags EMS_TYPE_BUFFER %d: %d\n", i, data[i]);
+                        }
+                        int64_t textOffset;
+                        EMS_ALLOC(textOffset, size_t(bufferLength + 1), bufChar,  // NULL padding at end
+                                  "EMSwriteUsingTags: out of memory to store buffer", false);
+                        bufInt64[EMSdataData(idx)] = textOffset;
+                        strcpy(EMSheapPtr(textOffset), (const char *) value->value);
+                        fprintf(stderr, "EMSwriteUsingTags EMS_TYPE_BUFFER finish\n");
+                    }
+                        break;
                     case EMS_TYPE_UNDEFINED:
                         bufInt64[EMSdataData(idx)] = 0xdeadbeef;
                         break;
@@ -652,20 +668,26 @@ bool EMSwriteUsingTags(int mmapID,
                         return false;
                 }
 
+                fprintf(stderr, "EMSwriteUsingTags oldTag\n");
                 oldTag.byte = newTag.byte;
                 if (finalFE != EMS_TAG_ANY) {
                     newTag.tags.fe = finalFE;
                     newTag.tags.rw = 0;
                 }
+                fprintf(stderr, "EMSwriteUsingTags newTag\n");
                 newTag.tags.type = value->type;
                 if (finalFE != EMS_TAG_ANY && bufTags[EMSdataTag(idx)].byte != oldTag.byte) {
                     fprintf(stderr, "EMSwriteUsingTags: Lost tag lock while BUSY\n");
                     return false;
                 }
 
+                fprintf(stderr, "EMSwriteUsingTags newTag byte\n");
                 //  Set the tags for the data (and map, if used) back to full to finish the operation
                 bufTags[EMSdataTag(idx)].byte = newTag.byte;
-                if (EMSisMapped) bufTags[EMSmapTag(idx)].tags.fe = EMS_TAG_FULL;
+                if (EMSisMapped) {
+                  fprintf(stderr, "EMSwriteUsingTags newTag full\n");
+                  bufTags[EMSmapTag(idx)].tags.fe = EMS_TAG_FULL;
+                }
                 return true;
             } else {
                 // Tag was marked BUSY between test read and CAS, must retry
@@ -682,25 +704,31 @@ bool EMSwriteUsingTags(int mmapID,
 //==================================================================
 //  WriteXF
 bool EMSwriteXF(int mmapID, EMSvalueType *key, EMSvalueType *value) {
-    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_FULL);
+    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_FULL, 0);
 }
 
 //==================================================================
 //  WriteXE
 bool EMSwriteXE(int mmapID, EMSvalueType *key, EMSvalueType *value) {
-    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_EMPTY);
+    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_EMPTY, 0);
 }
 
 //==================================================================
 //  WriteEF
 bool EMSwriteEF(int mmapID, EMSvalueType *key, EMSvalueType *value) {
-    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_EMPTY, EMS_TAG_FULL);
+    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_EMPTY, EMS_TAG_FULL, 0);
+}
+
+//==================================================================
+//  WriteEFBuffer
+bool EMSwriteEFBuffer(int mmapID, EMSvalueType *key, EMSvalueType *value, int length) {
+    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_EMPTY, EMS_TAG_FULL, length);
 }
 
 //==================================================================
 //  Write
 bool EMSwrite(int mmapID, EMSvalueType *key, EMSvalueType *value) {
-    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_ANY);
+    return EMSwriteUsingTags(mmapID, key, value, EMS_TAG_ANY, EMS_TAG_ANY, 0);
 }
 
 

@@ -61,8 +61,9 @@
 #define IS_INTEGER(x) ((double)(int64_t)(x) == (double)x)
 //==================================================================
 //  Determine the EMS type of a Napi argument
-#define NapiObjToEMStype(arg, stringIsJSON)                          \
+#define NapiObjToEMStype(arg, stringIsJSON, isBuffer)                \
 (                                                                    \
+   isBuffer ? EMS_TYPE_BUFFER :                                      \
    arg.IsNumber() ?                                                  \
            (IS_INTEGER(arg.As<Napi::Number>()) ? EMS_TYPE_INTEGER :  \
                                                  EMS_TYPE_FLOAT ) :  \
@@ -82,20 +83,26 @@
     if (info.Length() < 1) {                                        \
         Napi::Error::New(env, SOURCE_LOCATION ": missing key argument.").ThrowAsJavaScriptException(); \
     } else {                                                        \
-        NAPI_OBJ_2_EMS_OBJ(info[0], key, false);                    \
+        NAPI_OBJ_2_EMS_OBJ(info[0], key, false, false, 0);                    \
     }
 
 
 #define STACK_ALLOC_AND_CHECK_VALUE_ARG(argNum)                         \
     bool stringIsJSON = false;                                          \
+    bool isBuffer = false;                                              \
+    int bufferLength = 0;                                               \
     EMSvalueType value = EMS_VALUE_TYPE_INITIALIZER;                    \
     if (info.Length() == argNum + 2) {                                  \
         stringIsJSON = info[argNum + 1].As<Napi::Boolean>();            \
     }                                                                   \
+    if (info.Length() > argNum + 2) {                                  \
+        isBuffer = info[argNum + 2].As<Napi::Boolean>();            \
+        bufferLength = info[argNum + 3].As<Napi::Number>();            \
+    }                                                                   \
     if (info.Length() < argNum + 1) {                                   \
         Napi::Error::New(env, SOURCE_LOCATION ": ERROR, wrong number of arguments for value").ThrowAsJavaScriptException(); \
     } else {                                                            \
-        NAPI_OBJ_2_EMS_OBJ(info[argNum], value, stringIsJSON);          \
+        NAPI_OBJ_2_EMS_OBJ(info[argNum], value, stringIsJSON, isBuffer, bufferLength);          \
     }
 
 #define NODE_MMAPID_DECL \

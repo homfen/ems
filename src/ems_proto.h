@@ -63,6 +63,7 @@ extern "C" int EMSreleaseRW(const int mmapID, EMSvalueType *key);
 extern "C" bool EMSwriteXF(int mmapID, EMSvalueType *key, EMSvalueType *value);
 extern "C" bool EMSwriteXE(int mmapID, EMSvalueType *key, EMSvalueType *value);
 extern "C" bool EMSwriteEF(int mmapID, EMSvalueType *key, EMSvalueType *value);
+extern "C" bool EMSwriteEFBuffer(int mmapID, EMSvalueType *key, EMSvalueType *value, int bufferLength);
 extern "C" bool EMSwrite(int mmapID, EMSvalueType *key, EMSvalueType *value);
 extern "C" bool EMSsetTag(int mmapID, EMSvalueType *key, bool is_full);
 extern "C" bool EMSdestroy(int mmapID, bool do_unlink);
