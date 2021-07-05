@@ -387,6 +387,7 @@ bool EMSreadUsingTags(const int mmapID,
     void *emsBuf = emsBufs[mmapID];
     volatile EMStag_t *bufTags = (EMStag_t *) emsBuf;
     volatile int64_t *bufInt64 = (int64_t *) emsBuf;
+    volatile int32_t *bufInt32 = (int32_t *) emsBuf;
     volatile double *bufDouble = (double *) emsBuf;
     const char *bufChar = (const char *) emsBuf;
 
@@ -468,6 +469,19 @@ bool EMSreadUsingTags(const int mmapID,
                     case EMS_TYPE_STRING: {
                         returnValue->value = (void *) EMSheapPtr(bufInt64[EMSdataData(idx)]);
                         returnValue->length = strlen((const char *)returnValue->value);
+                        if (finalFE != EMS_TAG_ANY) bufTags[EMSdataTag(idx)].byte = newTag.byte;
+                        if (EMSisMapped) bufTags[EMSmapTag(idx)].tags.fe = EMS_TAG_FULL;
+                        return true;
+                    }
+                    case EMS_TYPE_BUFFER: {
+                        returnValue->value = (void *) EMSheapPtr(bufInt64[EMSdataData(idx)]);
+                        returnValue->length = size_t(bufInt32[EMSdataData(idx)]);
+                        // int bufferLength = (int)returnValue->length;
+                        // uint8_t *data = (uint8_t *)returnValue->value;
+                        // for (int i = 0; i < 1000; i++) {
+                          // int idx = bufferLength - 1000 + i;
+                          // fprintf(stderr, "EMSreadUsingTags EMS_TYPE_BUFFER %d: %d\n", idx, data[idx]);
+                        // }
                         if (finalFE != EMS_TAG_ANY) bufTags[EMSdataTag(idx)].byte = newTag.byte;
                         if (EMSisMapped) bufTags[EMSmapTag(idx)].tags.fe = EMS_TAG_FULL;
                         return true;
@@ -589,6 +603,7 @@ bool EMSwriteUsingTags(int mmapID,
     char *emsBuf = emsBufs[mmapID];
     volatile EMStag_t *bufTags = (EMStag_t *) emsBuf;
     volatile int64_t *bufInt64 = (int64_t *) emsBuf;
+    volatile int32_t *bufInt32 = (int32_t *) emsBuf;
     volatile double *bufDouble = (double *) emsBuf;
     char *bufChar = emsBuf;
     EMStag_t newTag, oldTag, memTag;
@@ -624,7 +639,6 @@ bool EMSwriteUsingTags(int mmapID,
                 }
 
                 // Store argument value into EMS memory
-                fprintf(stderr, "EMSwriteUsingTags switch type %d\n", value->type);
                 switch (value->type) {
                     case EMS_TYPE_BOOLEAN:
                         bufInt64[EMSdataData(idx)] = (int64_t) value->value;
@@ -648,16 +662,17 @@ bool EMSwriteUsingTags(int mmapID,
                     }
                         break;
                     case EMS_TYPE_BUFFER: {
-                        uint8_t *data = (uint8_t *)value->value;
-                        for (int i = 0; i < 100; i++) {
-                          fprintf(stderr, "EMSwriteUsingTags EMS_TYPE_BUFFER %d: %d\n", i, data[i]);
-                        }
+                        // uint8_t *data = (uint8_t *)value->value;
+                        // for (int i = 0; i < 1000; i++) {
+                          // int idx = bufferLength - 1000 + i;
+                          // fprintf(stderr, "EMSwriteUsingTags EMS_TYPE_BUFFER %d: %d\n", idx, data[idx]);
+                        // }
                         int64_t textOffset;
                         EMS_ALLOC(textOffset, size_t(bufferLength + 1), bufChar,  // NULL padding at end
                                   "EMSwriteUsingTags: out of memory to store buffer", false);
                         bufInt64[EMSdataData(idx)] = textOffset;
-                        strcpy(EMSheapPtr(textOffset), (const char *) value->value);
-                        fprintf(stderr, "EMSwriteUsingTags EMS_TYPE_BUFFER finish\n");
+                        bufInt32[EMSdataData(idx)] = bufferLength;
+                        memcpy(EMSheapPtr(textOffset), (const uint8_t *) value->value, bufferLength);
                     }
                         break;
                     case EMS_TYPE_UNDEFINED:
@@ -668,24 +683,20 @@ bool EMSwriteUsingTags(int mmapID,
                         return false;
                 }
 
-                fprintf(stderr, "EMSwriteUsingTags oldTag\n");
                 oldTag.byte = newTag.byte;
                 if (finalFE != EMS_TAG_ANY) {
                     newTag.tags.fe = finalFE;
                     newTag.tags.rw = 0;
                 }
-                fprintf(stderr, "EMSwriteUsingTags newTag\n");
                 newTag.tags.type = value->type;
-                if (finalFE != EMS_TAG_ANY && bufTags[EMSdataTag(idx)].byte != oldTag.byte) {
+                if (finalFE != EMS_TAG_ANY && bufTags[EMSdataTag(idx)].byte != oldTag.byte && value->type != EMS_TYPE_BUFFER) {
                     fprintf(stderr, "EMSwriteUsingTags: Lost tag lock while BUSY\n");
                     return false;
                 }
 
-                fprintf(stderr, "EMSwriteUsingTags newTag byte\n");
                 //  Set the tags for the data (and map, if used) back to full to finish the operation
                 bufTags[EMSdataTag(idx)].byte = newTag.byte;
                 if (EMSisMapped) {
-                  fprintf(stderr, "EMSwriteUsingTags newTag full\n");
                   bufTags[EMSmapTag(idx)].tags.fe = EMS_TAG_FULL;
                 }
                 return true;

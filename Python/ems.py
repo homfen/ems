@@ -64,6 +64,7 @@ TYPE_FLOAT     = 3
 TYPE_INTEGER   = 4
 TYPE_UNDEFINED = 5
 TYPE_JSON      = 6  # Catch-all for JSON arrays and Objects
+TYPE_BUFFER    = 7
 
 TAG_ANY     = 4  # Never stored, used for matching
 TAG_RW_LOCK = 3
@@ -651,6 +652,13 @@ class EMSarray(object):
             return bool(int(ffi.cast('uint64_t', emsval[0].value)))
         elif emsval[0].type == TYPE_UNDEFINED:
             return None
+        elif emsval[0].type == TYPE_BUFFER:
+            buf = ffi.cast('uint8_t *', emsval[0].value)
+            length = int(ffi.cast('uint32_t', emsval[0].length))
+            result = []
+            for i in range(length):
+                result.append(buf[i])
+            return result
         else:
             print("EMS ERROR - unknown type of value:", type(emsval), emsval)
             return None
@@ -723,7 +731,6 @@ class EMSarray(object):
         return self._returnData(val)
 
     def readFE(self, indexes):
-        print("readFE", indexes)
         emsnativeidx = _new_EMSval(self._idx(indexes))
         val = _new_EMSval(None)
         libems.EMSreadFE(self.mmapID, emsnativeidx, val)

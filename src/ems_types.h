@@ -42,6 +42,7 @@ typedef union {
         unsigned char rw   : EMS_TYPE_NBITS_RW;
     } tags;
     unsigned char byte;
+    uint32_t bufferLength;
 } EMStag_t;
 
 #define EMS_VALUE_TYPE_INITIALIZER {.length=0, .value=NULL, .type=EMS_TYPE_INVALID}

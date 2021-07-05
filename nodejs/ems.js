@@ -304,10 +304,8 @@ function EMSwrite(indexes, value) {
 }
 
 function EMSwriteEF(indexes, value) {
-  console.log("EMSwriteEF", indexes);
   var linearIndex = EMSidx(indexes, this);
   if (value instanceof Uint8Array || value instanceof Uint8ClampedArray) {
-    console.log("EMSwriteEF typedArray", value);
     var typedArray = Uint8Array.from(value);
     this.data.writeEFBuffer(
       linearIndex,
@@ -317,7 +315,6 @@ function EMSwriteEF(indexes, value) {
       typedArray.length
     );
   } else if (typeof value === "object") {
-    console.log("EMSwriteEF object", value);
     var json = JSON.stringify(value);
     this.data.writeEF(linearIndex, json, true);
   } else {

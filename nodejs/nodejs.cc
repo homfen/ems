@@ -43,7 +43,6 @@
  */
 #define NAPI_OBJ_2_EMS_OBJ(napiValue, emsValue, stringIsJSON, isBuffer, bufferLength) {         \
         emsValue.type = NapiObjToEMStype(napiValue, stringIsJSON, isBuffer);      \
-        fprintf(stderr, "emsValue.type: %d\n", emsValue.type);          \
         switch (emsValue.type) {                                        \
         case EMS_TYPE_BOOLEAN: {                                        \
             bool tmp = napiValue.As<Napi::Boolean>();                   \
@@ -73,15 +72,12 @@
             break;                                                      \
         case EMS_TYPE_BUFFER: {                                         \
             emsValue.length = bufferLength;                         \
-            fprintf(stderr, "EMS_TYPE_BUFFER length: %zu\n", emsValue.length);      \
-            fprintf(stderr, "NAPI_OBJ_2_EMS_OBJ alloca length: %zu\n", emsValue.length);      \
             Napi::Uint8Array arr = napiValue.As<Napi::Uint8Array>();     \
             uint8_t* data = new uint8_t[bufferLength];    \
             for (int j = 0; j < bufferLength; j++) {     \
               data[j] = uint8_t(arr[j]);     \
             }     \
             emsValue.value = data;    \
-            fprintf(stderr, "NAPI_OBJ_2_EMS_OBJ memcpy\n");      \
         }                                                               \
             break;                                                      \
         case EMS_TYPE_UNDEFINED:                                        \
@@ -392,16 +388,11 @@ Napi::Value NodeJSwriteEF(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value NodeJSwriteEFBuffer(const Napi::CallbackInfo& info) {
-    fprintf(stderr, "NodeJSwriteEF\n");
     Napi::Env env = info.Env();
     int length = info[4].As<Napi::Number>();
-    fprintf(stderr, "check key\n");
     STACK_ALLOC_AND_CHECK_KEY_ARG;
-    fprintf(stderr, "check value\n");
     STACK_ALLOC_AND_CHECK_VALUE_ARG(1);
-    fprintf(stderr, "call EMSwriteEF\n");
     bool returnValue = EMSwriteEFBuffer(mmapID, &key, &value, length);
-    fprintf(stderr, "returnValue %d\n", returnValue);
     return Napi::Value::From(env, returnValue);
 }
 

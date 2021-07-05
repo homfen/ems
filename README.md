@@ -4,29 +4,34 @@ OSX | Linux | Node 4.1-14.x, Python2/3:
 
 ### [API Documentation](http://mogill.github.io/ems/Docs/reference.html) | [EMS Website](http://mogill.github.io/ems/Docs/index.html)
 
+# updates:
 
+add typedArray support.
 
 # Extended Memory Semantics (EMS)
-__EMS makes possible persistent shared memory parallelism between Node.js, Python, and C/C++__.
+
+**EMS makes possible persistent shared memory parallelism between Node.js, Python, and C/C++**.
 
 Extended Memory Semantics (EMS) unifies synchronization and storage primitives
 to address several challenges of parallel programming:
-+ Allows any number or kind of processes to share objects
-+ Manages synchronization and object coherency
-+ Implements persistence to non-volatile memory and secondary storage
-+ Provides dynamic load-balancing between processes
-+ May substitute or complement other forms of parallelism
+
+- Allows any number or kind of processes to share objects
+- Manages synchronization and object coherency
+- Implements persistence to non-volatile memory and secondary storage
+- Provides dynamic load-balancing between processes
+- May substitute or complement other forms of parallelism
 
 ## [Examples: Parallel web servers, word counting](https://github.com/mogill/ems/tree/master/Examples)
 
 #### Table of Contents
-* [Parallel Execution Models Supported](#Types-of-Concurrency) Fork Join, Bulk Synchronous Parallel, User defined
-* [Atomic Operations](#Built-in-Atomic-Operations) Atomic Read-Modify-Write operations
-* [Examples](https://github.com/mogill/ems/tree/master/Examples) Parallel web servers, word counting
-* [Benchmarks](#Examples-and-Benchmarks) Bandwidth, Transaction processing
-* [Synchronization as a Property of the Data, Not a Duty for Tasks](#Synchronization-Property) Full/Empty tags
-* [Installation](#Installation) Downloading from Git or NPM
-* [Roadmap](#Roadmap) The Future™! It's all already happened
+
+- [Parallel Execution Models Supported](#Types-of-Concurrency) Fork Join, Bulk Synchronous Parallel, User defined
+- [Atomic Operations](#Built-in-Atomic-Operations) Atomic Read-Modify-Write operations
+- [Examples](https://github.com/mogill/ems/tree/master/Examples) Parallel web servers, word counting
+- [Benchmarks](#Examples-and-Benchmarks) Bandwidth, Transaction processing
+- [Synchronization as a Property of the Data, Not a Duty for Tasks](#Synchronization-Property) Full/Empty tags
+- [Installation](#Installation) Downloading from Git or NPM
+- [Roadmap](#Roadmap) The Future™! It's all already happened
 
 #### EMS is targeted at tasks too large for one core or one process but too small for a scalable cluster
 
@@ -37,26 +42,29 @@ can now be performed entirely in shared memory on a single server
 without using distributed programming.
 
 ## Sharing Persistent Objects Between Python and Javascript
+
 <img src="Docs/ems_js_py.gif" />
 
 Inter-language example in [interlanguage.{js,py}](https://github.com/mogill/ems/tree/master/Examples/Interlanguage)
 The animated GIF demonstrates the following steps:
-* Start Node.js REPL, create an EMS memory
-* Store "Hello"
-* Open a second session, begin the Python REPL
-* Connect Python to the EMS shared memory
-* Show the object created by JS is present in Python
-* Modify the object, and show the modification can be seen in JS
-* Exit both REPLs so no programs are running to "own" the EMS memory
-* Restart Python, show the memory is still present
-* Initialize a counter from Python
-* Demonstrate atomic Fetch and Add in JS
-* Start a loop in Python incrementing the counter
-* Simultaneously print and modify the value from JS
-* Try to read "empty" data from Python, the process blocks
-* Write the empty memory, marking it full, Python resumes execution
+
+- Start Node.js REPL, create an EMS memory
+- Store "Hello"
+- Open a second session, begin the Python REPL
+- Connect Python to the EMS shared memory
+- Show the object created by JS is present in Python
+- Modify the object, and show the modification can be seen in JS
+- Exit both REPLs so no programs are running to "own" the EMS memory
+- Restart Python, show the memory is still present
+- Initialize a counter from Python
+- Demonstrate atomic Fetch and Add in JS
+- Start a loop in Python incrementing the counter
+- Simultaneously print and modify the value from JS
+- Try to read "empty" data from Python, the process blocks
+- Write the empty memory, marking it full, Python resumes execution
 
 ## Types of Concurrency
+
 <table>
     <tr>
       <td width="50%">
@@ -94,8 +102,8 @@ EMS implements several different parallel execution models:
     </tr>
 </table>
 
-
 ## Built in Atomic Operations
+
 EMS operations may performed using any JSON data type, read-modify-write operations
 may use any combination of JSON data types.
 like operations on ordinary data.
@@ -104,31 +112,32 @@ Atomic read-modify-write operations are available
 in all concurrency modes, however collectives are not
 available in user defined modes.
 
-- __Atomic Operations__:
-	Read, write, readers-writer lock, read when full and atomically mark empty, write when empty and atomically mark full
+- **Atomic Operations**:
+  Read, write, readers-writer lock, read when full and atomically mark empty, write when empty and atomically mark full
 
-- __Primitives__:
-	Stacks, queues, transactions
+- **Primitives**:
+  Stacks, queues, transactions
 
-- __Read-Modify-Write__:
-	Fetch-and-Add, Compare and Swap
+- **Read-Modify-Write**:
+  Fetch-and-Add, Compare and Swap
 
-- __Collective Operations__:
-	All basic [OpenMP](https://en.wikipedia.org/wiki/OpenMP)
-    collective operations are implemented in EMS:
-    dynamic, block, guided, as are the full complement of static loop scheduling,
-    barriers, master and single execution regions
+- **Collective Operations**:
+  All basic [OpenMP](https://en.wikipedia.org/wiki/OpenMP)
+  collective operations are implemented in EMS:
+  dynamic, block, guided, as are the full complement of static loop scheduling,
+  barriers, master and single execution regions
 
 ## Examples and Benchmarks
 
 ### [API Documentation](http://mogill.github.io/ems/Docs/reference.html) | [EMS Website](http://mogill.github.io/ems/Docs/index.html)
 
 ### Word Counting Using Atomic Operations
+
 [Word counting example](https://github.com/mogill/ems/tree/master/Examples)
 
 Map-Reduce is often demonstrated using word counting because each document can
 be processed in parallel, and the results of each document's dictionary reduced
-into a single dictionary.  This EMS implementation also
+into a single dictionary. This EMS implementation also
 iterates over documents in parallel, but it maintains a single shared dictionary
 across processes, atomically incrementing the count of each word found.
 The final word counts are sorted and the most frequently appearing words
@@ -145,6 +154,7 @@ AWS instances are also bandwidth limited to EBS storage, where our Gutenberg
 corpus is stored.
 
 ### Bandwidth Benchmarking
+
 [STREAMS Example](https://github.com/mogill/ems/tree/master/Examples/STREAMS)
 
 A benchmark similar to [STREAMS](https://www.cs.virginia.edu/stream/)
@@ -154,8 +164,8 @@ floating point operations can be performed on a
 
 <img src="Docs/streams.svg" type="image/svg+xml" height="300px">
 
-
 ### Benchmarking of Transactions and Work Queues
+
 [Transactions and Work Queues Example](https://github.com/mogill/ems/tree/master/Examples)
 
 Transactional performance is measured alone, and again with a separate
@@ -164,7 +174,8 @@ The experiments were run using an Amazon EC2 instance:<br>
 <code>c4.8xlarge (132 ECUs, 36 vCPUs, 2.9 GHz, Intel Xeon E5-2666v3, 60 GiB memory</code>
 
 #### Experiment Design
-Six EMS arrays are created, each holding 1,000,000 numbers.  During the
+
+Six EMS arrays are created, each holding 1,000,000 numbers. During the
 benchmark, 1,000,000 transactions are performed, each transaction involves 1-5
 randomly selected elements of randomly selected EMS arrays.
 The transaction reads all the elements and
@@ -172,15 +183,14 @@ performs a read-modify-write operation involving at least 80% of the elements.
 After all the transactions are complete, the array elements are checked
 to confirm all the operations have occurred.
 
-The parallel process scheduling model used is *block dynamic* (the default),
+The parallel process scheduling model used is _block dynamic_ (the default),
 where each process is responsible for successively smaller blocks
-of iterations.  The execution model is *bulk synchronous parallel*, each
+of iterations. The execution model is _bulk synchronous parallel_, each
 processes enters the program at the same main entry point
 and executes all the statements in the program.
 `forEach` loops have their normal semantics of performing all iterations,
 `parForEach` loops are distributed across threads, each process executing
 only a portion of the total iteration space.
-
 
 <table width=100%>
 	<tr>
@@ -224,21 +234,19 @@ only a portion of the total iteration space.
     </tr>
 </table>
 
-
-
 ## [Synchronization as a Property of the Data, Not a Duty for Tasks](#Synchronization-Property)
 
 ### [API Documentation](http://mogill.github.io/ems/Docs/reference.html) | [EMS Website](http://mogill.github.io/ems/Docs/index.html)
 
 EMS internally stores tags that are used for synchronization of
 user data, allowing synchronization to happen independently of
-the number or kind of processes accessing the data.  The tags
+the number or kind of processes accessing the data. The tags
 can be thought of as being in one of three states, _Empty,
 Full,_ or _Read-Only_, and the EMS intrinsic functions
 enforce atomic access through automatic state transitions.
 
 The EMS array may be indexed directly using an integer, or using a key-index
-mapping from any primitive type.  When a map is used, the key and data
+mapping from any primitive type. When a map is used, the key and data
 itself are updated atomically.
 
 <table >
@@ -269,7 +277,6 @@ itself are updated atomically.
     </tr>
 </table>
 
-
 ## More Technical Information
 
 For a more complete description of the principles of operation,
@@ -282,7 +289,6 @@ contact the author at ems@rotang.com
   <img src="Docs/blockDiagram.svg" type="image/svg+xml" height="300px" style="vertical-align:text-top;"/>
 </center>
 
-
 ## Installation
 
 Because all systems are already multicore,
@@ -293,6 +299,7 @@ lightweight threads communicating through shared memory
 is reflected in a rapid code-debug cycle for ad-hoc application development.
 
 ### Quick Start with the Makefile
+
 To build and test all C, Python 2 and 3, and Node.js targets,
 a makefile can automate most build and test tasks.
 
@@ -311,9 +318,9 @@ dunlin> make help
     clean[_js|_py|_py2|_py3]  Remove Node.js or Py files that can be regenerated
 ```
 
-
 ### Install via npm
-EMS is available as a NPM Package.  EMS depends on the Node addon API
+
+EMS is available as a NPM Package. EMS depends on the Node addon API
 (N-API) package.
 
 ```sh
@@ -321,6 +328,7 @@ npm install ems
 ```
 
 ### Install via GitHub
+
 Download the source code, then compile the native code:
 
 ```sh
@@ -329,36 +337,37 @@ cd ems
 npm install
 ```
 
-
 ### Installing for Python
+
 Python users should download and install EMS git (see above).
 There is no PIP package, but not due lack of desire or effort.
 A pull request is most welcome!
 
-
 ### Run Some Examples
 
-Click here for __[Detailed Examples](https://github.com/mogill/ems/tree/master/Examples)__.
+Click here for **[Detailed Examples](https://github.com/mogill/ems/tree/master/Examples)**.
 
 On a Mac and most Linux
 distributions EMS will "just work", but
-some Linux distributions restrict access to shared memory.  The
+some Linux distributions restrict access to shared memory. The
 quick workaround is to run jobs as root, a long-term solution will
 vary with Linux distribution.
 
-
 Run the work queue driven transaction processing example on 8 processes:
+
 ```sh
 npm run <example>
 ```
 
 Or manually via:
+
 ```sh
 cd Examples
 node concurrent_Q_and_TM.js 8
 ```
 
 Running all the tests with 8 processes:
+
 ```sh
 npm run test      # Alternatively: npm test
 ```
@@ -370,10 +379,11 @@ for test in `ls *js`; do node $test 8; done
 ```
 
 ## Platforms Supported
-As of 2016-05-01, Mac/Darwin and Linux are supported.  A windows port pull request is welcomed!
 
+As of 2016-05-01, Mac/Darwin and Linux are supported. A windows port pull request is welcomed!
 
 ## Roadmap
+
 EMS 1.0 uses Nan for long-term Node.js support, we continue to
 develop on OSX and Linux via Vagrant.
 
@@ -387,10 +397,10 @@ EMS 1.5 Refactored JS-EMS object conversion temporary storage
 
 EMS 1.6 **[This Release]** Updated to replace deprecated NodeJS NAN API with the N-API.
 
-EMS 1.7 **[Planned]** Key deletion that frees all resources.  Replace open hashing with chaining.
+EMS 1.7 **[Planned]** Key deletion that frees all resources. Replace open hashing with chaining.
 
 EMS 1.8 **[Planned]** Memory allocator based on
-*R. Marotta, M. Ianni, A. Scarselli, A. Pellegrini and F. Quaglia, "NBBS: A Non-Blocking Buddy System for Multi-core Machines," 2019 19th IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing (CCGRID), Larnaca, Cyprus, 2019, pp. 11-20, doi: 10.1109/CCGRID.2019.00011.*
+_R. Marotta, M. Ianni, A. Scarselli, A. Pellegrini and F. Quaglia, "NBBS: A Non-Blocking Buddy System for Multi-core Machines," 2019 19th IEEE/ACM International Symposium on Cluster, Cloud and Grid Computing (CCGRID), Larnaca, Cyprus, 2019, pp. 11-20, doi: 10.1109/CCGRID.2019.00011._
 
 EMS 1.9 **[Planned]** Vectorized JSON indexer.
 
@@ -402,9 +412,11 @@ ES6, Python, and other dynamically typed languages languages,
 making atomic operations on persistent memory more transparent.
 
 ## License
+
 BSD, other commercial and open source licenses are available.
 
 ## Links
+
 [API Documentation](http://mogill.github.io/ems/Docs/reference.html)
 
 [EMS Website](http://mogill.github.io/ems/Docs/index.html)
@@ -414,6 +426,7 @@ BSD, other commercial and open source licenses are available.
 [Get the source at GitHub](https://github.com/mogill/ems)
 
 ## About
+
 Jace A Mogill specializes in hardware/software co-design of
 resource constrained computing at both the largest and smallest scales.
 He has over 20 years experience with distributed, multi-core, FPGA, CGRA, GPU, CPU,

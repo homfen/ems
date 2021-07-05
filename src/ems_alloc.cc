@@ -97,14 +97,14 @@ size_t emsMem_alloc(struct emsMem *self, size_t bytesRequested) {
     if (size == 0) size++;
     size_t length = 1UL << self->level;
 
-    fprintf(stderr, "emsMem_alloc: self=%x   size=%ld   len=%ld\n", self, size, length);
+    // fprintf(stderr, "emsMem_alloc: self=%x   level=%ld  size=%ld   len=%ld\n", self, self->level, size, length);
     if (size > length) return -1;
 
     int64_t index = 0;
     int32_t level = 0;
 
     while (index >= 0) {
-        fprintf(stderr, "emsMem_alloc: index=%lld   level=%d   length=%zu\n", index, level, length);
+        // fprintf(stderr, "emsMem_alloc: index=%lld   level=%d   length=%zu\n", index, level, length);
         if (size == length) {
             if (self->tree[index] == BUDDY_UNUSED) {
                 self->tree[index] = BUDDY_USED;

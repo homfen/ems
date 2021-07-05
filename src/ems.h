@@ -129,7 +129,7 @@ extern size_t  emsBufLengths[EMS_MAX_N_BUFS];
 extern char    emsBufFilenames[EMS_MAX_N_BUFS][MAX_FNAME_LEN];
 
 //  Maximum number of slots to check due to conflicts
-#define  MAX_OPEN_HASH_STEPS 200
+#define  MAX_OPEN_HASH_STEPS 400
 
 
 //==================================================================
