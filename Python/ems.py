@@ -552,13 +552,18 @@ def _new_EMSval(val):
         emsval[0].type = TYPE_BOOLEAN
         emsval[0].value = ffi.cast('void *', val)
     elif type(val) == list:
-        if sys.version_info[0] == 2:  # Python 2 or 3
-            newval = ffi.new('char []', bytes(json.dumps(val)))
+        if len(val) > 10000:
+            newval = ffi.new('uint8_t *', val)
+            emsval[0].type = TYPE_BUFFER
+            emsval[0].length = len(val)
         else:
-            newval = ffi.new('char []', bytes(json.dumps(val), 'utf-8'))
+            emsval[0].type = TYPE_JSON
+            if sys.version_info[0] == 2:  # Python 2 or 3
+                newval = ffi.new('char []', bytes(json.dumps(val)))
+            else:
+                newval = ffi.new('char []', bytes(json.dumps(val), 'utf-8'))
+            emsval[0].length = len(newval) + 1
         emsval[0].value = newval
-        emsval[0].length = len(newval) + 1
-        emsval[0].type = TYPE_JSON
         global_weakkeydict[emsval] = (emsval[0].length, emsval[0].type, emsval[0].value, newval)
     elif type(val) == dict:
         if sys.version_info[0] == 2:  # Python 2 or 3
@@ -708,7 +713,16 @@ class EMSarray(object):
     def writeEF(self, indexes, value):
         nativeIndex = _new_EMSval(self._idx(indexes))
         nativeValue = _new_EMSval(value)
-        libems.EMSwriteEF(self.mmapID, nativeIndex, nativeValue)
+        if nativeValue[0].type == TYPE_BUFFER:
+            libems.EMSwriteEFBuffer(self.mmapID, nativeIndex, nativeValue, nativeValue[0].length)
+        else:
+            libems.EMSwriteEF(self.mmapID, nativeIndex, nativeValue)
+        return (self.mmapID, nativeIndex, nativeValue)
+
+    def writeEFBuffer(self, indexes, value):
+        nativeIndex = _new_EMSval(self._idx(indexes))
+        nativeValue = _new_EMSval(value)
+        libems.EMSwriteEFBuffer(self.mmapID, nativeIndex, nativeValue, nativeValue[0].length)
         return (self.mmapID, nativeIndex, nativeValue)
 
     def writeXF(self, indexes, value):
@@ -832,6 +846,9 @@ class EMSelement(object):
 
     def writeEF(self, value):
         return self._ems_array.writeEF(self._index, value)
+
+    def writeEFBuffer(self, value):
+        return self._ems_array.writeEFBuffer(self._index, value)
 
     def read(self):
         return self._ems_array.read(self._index)
