@@ -1,7 +1,7 @@
 {
-  "name": "ems",
-  "version": "1.6.1",
-  "author": "Jace A Mogill <jace@mogill.com>",
+  "name": "ems-typed",
+  "version": "1.0.0",
+  "author": "homfen <homfen@gmail.com>",
   "description": "Persistent Shared Memory and Parallel Programming Model",
   "contributors": [
     {
@@ -11,6 +11,10 @@
     {
       "name": "Aleksander Budzynowski",
       "email": "aleks@budzynowski.com"
+    },
+    {
+      "name": "homfen",
+      "email": "homfen@gmail.com"
     }
   ],
   "scripts": {
@@ -21,9 +25,9 @@
   "main": "nodejs/ems.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mogill/ems.git"
+    "url": "https://github.com/homfen/ems.git"
   },
-  "homepage": "https://github.com/mogill/ems.git",
+  "homepage": "https://github.com/homfen/ems.git",
   "keywords": [
     "non volatile memory",
     "NVM",
